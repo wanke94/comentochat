@@ -1,60 +1,86 @@
 from django.shortcuts import render
-from rest_framework import status
-from rest_framework.decorators import api_view
-from chat.serializers import UserInfoSerializer
-from rest_framework.response import Response
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import JSONParser
 
 from chat.models import UserInfo
+from chat.models import Room
+from chat.models import Message
+from chat.models import UserRoom
 
+from chat.serializers import UserInfoSerializer
+from chat.serializers import RoomSerializer
+from chat.serializers import MessageSerializer
+from chat.serializers import UserRoomSerializer
 
 def index(request):
     return render(request, 'chat/index.html')
 
+@csrf_exempt
+def user_create(request, format=None):
+    serializer = UserInfoSerializer(data=request.POST)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
 
-@api_view(['GET', 'POST'])
-def user_list(request):
-#user 전체 리스트
-
-    if request.method == 'GET':
-        snippets = UserInfo.objects.all()
-        serializer = UserInfoSerializer(snippets, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
-        serializer = UserInfoSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def user_detail(request, id):
-    """
-    talend api에서 GET으로 http://127.0.0.1:8000/chat/userinfo?id=1 실행시 404_NOT_FOUND응답을 받습니다.
-    urls 설정을   path('userinfo', views.user_detail)로 변경 후 id를 매개변수가 아닌 메소드 내에서 임의로 변수 1로 지정후
-    실행하면 제대로된 응답을 받습니다.
-    문제점이 무엇인지 알고 싶습니다.
-    """
-
+@csrf_exempt
+def user_lookup(request, format=None):
     try:
-        user_info = UserInfo.objects.get(id=id)
+        userinfo = UserInfo.objects.get(id=request.POST['id'])
     except UserInfo.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return HttpResponse(status=404)
 
-    #user_lookup
-    if request.method == 'GET':
-        serializer = UserInfoSerializer(user_info)
-        return Response(serializer.data)
+    serializer = UserInfoSerializer(userinfo)
+    return JsonResponse(serializer.data)
 
-    #user_create, user_update
-    elif request.method == 'PUT':
-        serializer = UserInfoSerializer(user_info, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@csrf_exempt
+def user_delete(reqeust):
+    try:
+        userinfo = UserInfo.objects.get(id=reqeust.POST['id'])
+    except UserInfo.DoesNotExist:
+        return HttpResponse(status=404)
 
-    #user_delete
-    elif request.method == 'DELETE':
-        user_info.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    if userinfo.delete():
+        return HttpResponse('deleted')
+    return HttpResponse('delete failed')
+
+@csrf_exempt
+def user_update(request):
+    org_userinfo = UserInfo.objects.get(id=request.POST['id'])
+    serializer = UserInfoSerializer(org_userinfo, data=request.POST)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data)
+    return JsonResponse(serializer.errors, status=400)
+
+@csrf_exempt
+def room_create(request):
+    serializer = RoomSerializer(data=request.POST)
+    if serializer.is_valid():
+        room_id=Room.objects.get(id=serializer.data['id'])
+        user_room = {'user_id': request.POST['user_id'],'room_id': request.POST['room_id'], 'dis_host': True}
+        ur_serializer=UserRoomSerializer(data=user_room)
+        serializer.save()
+        ur_serializer.save()
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
+
+def room_join(request):
+    return 0
+
+def room_leave(request):
+    return 0
+
+def room_destroy(request):
+    return 0
+
+def msg_send(reqeust):
+    return 0
+
+def msg_read(reqeust):
+    return 0
+
+def room_info():
+    return 0
+
