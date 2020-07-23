@@ -10,7 +10,12 @@ urlpatterns = [
     path('userdelete/',views.user_delete, name='userdelete'),
     path('userupdate/',views.user_update, name='userupdate'),
     path('roomcreate/',views.room_create, name='roomcreate'),
-    path('room_join/',views.room_join, name='roomjoin'),
+    path('roomjoin/',views.room_join, name='roomjoin'),
+    path('roomleave/',views.room_leave, name='roomleave'),
+    path('roomdestroy/',views.room_destroy, name='roomdestroy'),
+    path('msgsend/',views.msg_send, name='msgsend'),
+    path('msgread/',views.msg_read, name='msgread'),
+    path('roominfo/',views.room_info, name='room_info'),
 
 ]
 

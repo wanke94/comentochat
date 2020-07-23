@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from chat.models import UserInfo
+from chat.models import UserInfo, Room, Message
 
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,15 +8,11 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserInfo
-        fields = ['user_id','room_name', 'password']
+        model = Room
+        fields = ['id', 'host','room_name', 'password', 'guest']
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserInfo
-        fields = ['user_id','room_id', 'message','timestamp']
+        model = Message
+        fields = ['id','user_id','room_id', 'msg','timestamp']
 
-class UserRoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserInfo
-        fields = ['user_id','room_id', 'dis_host']
