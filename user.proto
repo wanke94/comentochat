@@ -1,12 +1,18 @@
 syntax = "proto3";
 
+package user;
+
 import "google/protobuf/timestamp.proto";
 
 service UserService {
-  rpc GetUser(User) returns (User);
+  rpc GetUser(UserRequest) returns (UserResponse);
 }
 
-message User {
+message UserRequest {
+  string id = 1;
+}
+
+message UserResponse{
   string id = 1;
   string nick_name = 2;
   string url = 3;
